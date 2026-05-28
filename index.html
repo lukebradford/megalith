@@ -8,13 +8,6 @@
     <link rel="icon" type="image/png" href="AppIcon.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <style>
-        @font-face {
-            font-family: "League Gothic";
-            src: url("league.otf") format("opentype");
-            font-weight: 400;
-            font-display: swap;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -36,32 +29,101 @@
 
         header {
             text-align: center;
-            padding: 3.5rem 1.5rem 2rem;
+            padding: 3.5rem 1.5rem 1.25rem;
             background: #000;
         }
 
-        header img.icon {
-            width: 104px;
-            height: 104px;
-            border-radius: 23px;
-            margin-bottom: 1.25rem;
-        }
-
-        header h1 {
-            font-family: "League Gothic", "Futura", "Helvetica Neue", sans-serif;
-            font-size: 5rem;
-            line-height: 0.9;
-            font-weight: 400;
-            letter-spacing: 0.18em;
-            text-indent: 0.18em;
-            color: var(--amber);
-            text-transform: uppercase;
+        header img.wordmark {
+            display: block;
+            width: min(440px, 80%);
+            height: auto;
+            margin: 0 auto 1rem;
         }
 
         header p {
             font-size: 1.05rem;
             color: #888;
             margin-top: 0.75rem;
+        }
+
+        /* iPhone hero — pure-CSS device chrome around the screenshot */
+        .hero {
+            display: flex;
+            justify-content: center;
+            padding: 0.5rem 1.5rem 1rem;
+        }
+
+        .device {
+            position: relative;
+            width: clamp(232px, 66vw, 288px);
+            padding: 11px;
+            background: linear-gradient(150deg, #3a3a3e 0%, #0c0c0d 42%, #16161a 60%, #3a3a3e 100%);
+            border-radius: 46px;
+            box-shadow: 0 0 0 1.5px #000,
+                        0 26px 60px -22px rgba(0, 0, 0, 0.95),
+                        0 6px 18px -8px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Volume (left) and power (right) buttons */
+        .device::before,
+        .device::after {
+            content: "";
+            position: absolute;
+            width: 2.5px;
+            background: #2a2a2e;
+            border-radius: 2px;
+        }
+
+        .device::before {
+            left: -2px;
+            top: 28%;
+            height: 86px;
+        }
+
+        .device::after {
+            right: -2px;
+            top: 34%;
+            height: 62px;
+        }
+
+        .device .screen {
+            position: relative;
+            display: block;
+            border-radius: 36px;
+            overflow: hidden;
+            background: #000;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+        }
+
+        .device .screen img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .device .island {
+            position: absolute;
+            top: 23px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 31%;
+            height: 21px;
+            background: #000;
+            border-radius: 999px;
+            z-index: 2;
+        }
+
+        .device .island::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 16%;
+            transform: translateY(-50%);
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #0d0f14;
+            box-shadow: inset 0 0 2px rgba(120, 140, 200, 0.45);
         }
 
         main {
@@ -151,10 +213,17 @@
 </head>
 <body>
     <header>
-        <img class="icon" src="AppIcon.png" alt="Megalith app icon">
-        <h1>Megalith</h1>
-        <p>Words, set in stone.</p>
+        <img class="wordmark" src="wordmark.svg" alt="Megalith">
+        <p>One-step block text posters for iOS.</p>
     </header>
+    <div class="hero">
+        <div class="device">
+            <span class="island"></span>
+            <div class="screen">
+                <img src="because.png" alt="A Megalith poster reading “Because your words deserve to hit like this,” shown inside the app.">
+            </div>
+        </div>
+    </div>
     <main>
         <section>
             <h2>About</h2>
@@ -164,7 +233,7 @@
             <h2>How to use</h2>
             <ul>
                 <li>Type a short phrase — press return for an explicit line break</li>
-                <li>Tap <strong>Randomize</strong> to re-roll the fonts and line breaks</li>
+                <li>Shuffle fonts and layout with a single tap</li>
                 <li>Choose a canvas shape: Square, Portrait, Story, or Poster</li>
                 <li>Set the text color and a background color or photo</li>
                 <li>Share the result or save it to your photo library</li>
@@ -173,16 +242,16 @@
         <section>
             <h2>Support</h2>
             <p>Having trouble or want to share feedback? Get in touch and we'll get back to you as soon as we can.</p>
-            <a class="contact-link" href="mailto:lukebradfordapps@gmail.com?subject=Megalith%20for%20iPhone">Contact Support</a>
+            <a class="contact-link" href="mailto:lukebradfordapps@gmail.com?subject=Megalith%20for%20iPhone">Contact support</a>
         </section>
         <section>
             <h2>Privacy</h2>
             <p>Megalith collects no personal data and does no tracking. There are no accounts, no analytics, and no third-party SDKs — everything happens on your device. Photos you choose as backgrounds are processed locally and never uploaded, and the app only writes to your photo library when you save a graphic you've made.</p>
-            <p style="margin-top: 1rem;">Read the full <a href="privacy.html">Privacy Policy</a>.</p>
+            <p style="margin-top: 1rem;">Read the full <a href="privacy.html">Privacy policy</a>.</p>
         </section>
     </main>
     <footer>
-        <a href="privacy.html">Privacy Policy</a> &nbsp;·&nbsp; <a href="mailto:lukebradfordapps@gmail.com?subject=Megalith%20for%20iPhone">Support</a> &nbsp;·&nbsp; &copy; 2026 Luke Bradford. All rights reserved.
+        <a href="privacy.html">Privacy policy</a> &nbsp;·&nbsp; <a href="mailto:lukebradfordapps@gmail.com?subject=Megalith%20for%20iPhone">Support</a> &nbsp;·&nbsp; &copy; 2026 Luke Bradford. All rights reserved.
     </footer>
 </body>
 </html>
