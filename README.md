@@ -11,6 +11,7 @@ Static site served via **GitHub Pages** for the [Megalith](https://apps.apple.co
 
 - `index.html` — support page (about, how to use, contact, privacy summary, hero screenshot)
 - `privacy.html` — full privacy policy
+- `press/` — press kit page (`press/index.html`), assets (`press/assets/` — icon, wordmark, screenshots, demo video, plain-text README), and downloadable zips (`megalith-press-kit.zip`, `megalith-screenshots.zip`)
 - `wordmark.svg` — the "MEGALITH" wordmark (Superclarendon Bold, glyphs outlined so no font is shipped)
 - `because.png` — app screenshot shown in the hero (iPhone frame is pure CSS)
 - `AppIcon.png`, `apple-touch-icon.png` — favicon / touch icon (black serif "M" on amber)
