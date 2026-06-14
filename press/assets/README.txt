@@ -39,7 +39,7 @@ megalith-wordmark.svg                 MEGALITH wordmark (vector, amber)
 megalith-demo.mp4                     ~29s demo clip from the upcoming 2.0
                                       build (886 x 1920, H.264)
 screenshots/
-  megalith-01-because.png             Type a phrase, get a poster
+  megalith-01-sun.png                 Type a phrase, get a poster
   megalith-02-color-controls.png      Text & background colors
   megalith-03-photo-background.png    Photo backgrounds
   megalith-04-night.png               A different mood every shuffle
