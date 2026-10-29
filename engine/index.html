@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Justifying type to the pixel</title>
+    <meta name="description" content="How a block-justified poster layout works: a closed-form font size per line, measuring glyph ink instead of advance width, a line breaker whose cost function is a house style, and leading sized from real descenders.">
+    <link rel="canonical" href="https://lukebradford.github.io/megalith/engine/">
+    <link rel="icon" type="image/png" href="../AppIcon.png">
+    <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://lukebradford.github.io/megalith/engine/">
+    <meta property="og:title" content="Justifying type to the pixel">
+    <meta property="og:description" content="Every line the same width, each line's size set by how much text it holds. The math is one line; making the edges actually straight took the rest.">
+    <meta property="og:image" content="https://lukebradford.github.io/megalith/press/assets/screenshots/megalith-01-sun.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #000;
+            --fg: #e0e0e8;
+            --muted: #8a8a96;
+            --line: #1c1c24;
+            --card: #0c0c10;
+            --amber: #ffb033;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: var(--amber); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        main { max-width: 720px; margin: 0 auto; padding: 4rem 1rem 5rem; }
+        .eyebrow {
+            font-size: 0.8rem; letter-spacing: 0.3em; text-transform: uppercase;
+            color: var(--muted); margin-bottom: 1rem;
+        }
+        h1 { font-size: 2.2rem; line-height: 1.2; color: #fff; margin-bottom: 0.75rem; }
+        .dek { color: var(--muted); font-size: 1.1rem; margin-bottom: 2.5rem; }
+        h2 { font-size: 1.3rem; color: #fff; margin: 2.75rem 0 0.75rem; }
+        p { margin-bottom: 1.1rem; }
+        ul, ol { margin: 0 0 1.1rem 1.4rem; }
+        li { margin-bottom: 0.4rem; }
+        code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.9em; color: #fff; }
+        pre {
+            background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+            padding: 1rem 1.1rem; overflow-x: auto; margin-bottom: 1.25rem;
+            font-size: 0.88rem; line-height: 1.55;
+        }
+        pre code { font-size: inherit; }
+        figure { margin: 2rem 0; display: flex; gap: 1rem; justify-content: center; }
+        figure img { width: 48%; max-width: 280px; height: auto; border-radius: 14px; border: 1px solid var(--line); }
+        figcaption { color: var(--muted); font-size: 0.9rem; text-align: center; margin-top: -1.25rem; margin-bottom: 2rem; }
+        .note { color: var(--muted); font-size: 0.95rem; }
+        footer { border-top: 1px solid var(--line); margin-top: 3rem; padding-top: 1.5rem; color: var(--muted); font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+<main>
+    <p class="eyebrow">Luke Bradford · October 2026</p>
+    <h1>Justifying type to the pixel</h1>
+    <p class="dek">Every line the same width, each line's size set by how much text it holds. The math is one line. Making the edges actually straight took the rest.</p>
+
+    <p>You've seen the look on old letterpress posters and hand-painted signs: a phrase set as a solid rectangle of type. Short lines are huge, long lines are small, and both edges are perfectly straight. A designer does it by hand in a few minutes per poster. I wanted it to happen as you type, so I wrote a small layout engine for it. Here's how it works, including the parts that turned out to be harder than they looked.</p>
+
+    <figure>
+        <img src="../press/assets/screenshots/megalith-01-sun.png" alt="A phrase set as a block-justified poster in slab serif">
+        <img src="../press/assets/screenshots/megalith-04-night.png" alt="A phrase set in a condensed sans over a night-sky photo">
+    </figure>
+    <figcaption>Two outputs. Every line's ink spans exactly the same width.</figcaption>
+
+    <h2>One line: the size is a closed form</h2>
+    <p>Rendered text width is linear in font size. So you don't need to search for the size that fills a target width <code>W</code>. Measure the line once at a reference size (100pt), and the answer is a ratio:</p>
+<pre><code>w0   = width(text, font, 100pt)
+size = 100 · W / w0</code></pre>
+    <p>That single rule <em>is</em> the look. A line with a few short words gets a large size, and a line with many words gets a small one. Everything else is clamping:</p>
+    <ul>
+        <li><b>Too big</b> (a short line would exceed 72% of <code>W</code> in size): cap the size and fill the leftover with uniform letter-spacing, <code>kern = (W − widthAtCap) / (glyphs − 1)</code>.</li>
+        <li><b>Too few gaps to track</b> (a lone "A" has zero gaps, "OF" has one): capping would leave empty space at the sides, so grow past the cap with maximum tracking sharing the work. Solve <code>w0·s/100 + 0.45·s·gaps = W</code> for <code>s</code>. No line is ever narrower than the block.</li>
+        <li><b>Too small</b> (a long line under 7.5% of <code>W</code>): keep it. It still fills the width, but it's flagged so the line breaker learns to avoid it.</li>
+    </ul>
+    <p>One detail matters a lot: the kern is applied to every glyph <em>except the last</em>. Kern after the final glyph adds invisible width on the right, and the right edge drifts.</p>
+
+    <h2>The bug: justified boxes, ragged pixels</h2>
+    <p>The first version measured width the usual way, as the typographic advance (what <code>NSAttributedString.size()</code> returns). Every line's box was exactly <code>W</code> wide and started at the same x. The edges were still visibly ragged, drifting 10–15 px at a 1080 px canvas.</p>
+    <p>The reason is that the advance includes <b>side bearings</b>: invisible space between the glyph's origin and its first inked pixel, and between its last inked pixel and the pen's end position. Bearings differ per font and per letter. Mix three typefaces across six lines, start them with different letters, and aligning the boxes leaves the ink misaligned.</p>
+    <p>The fix is to measure the ink itself. Core Text will return the bounds of the actual glyph outlines:</p>
+<pre><code>let line   = CTLineCreateWithAttributedString(attr)
+let bounds = CTLineGetBoundsWithOptions(line, .useGlyphPathBounds)
+// bounds.minX  = origin → leftmost inked pixel (can be negative)
+// bounds.width = leftmost → rightmost inked pixel</code></pre>
+    <p>Fit the <em>ink</em> width to <code>W</code>, then draw each line at <code>x = left − inkLeftBearing</code> so its first visible pixel lands exactly on the edge. The nice part is that nothing else changes. Ink width is still linear in size, and uniform kern on <code>n − 1</code> gaps adds exactly <code>kern · (n − 1)</code> while leaving the first glyph in place. So the closed form still holds: measure once per (font, text) at 100pt, cache it, and scale.</p>
+
+    <h2>Where to break: a cost function that is a house style</h2>
+    <p>Line breaking looks like Knuth–Plass: dynamic programming over break points, minimizing a sum of per-line costs, <code>O(n²)</code> in words. The objective is inverted, though. TeX holds the font size fixed and penalizes stretched spaces. Here the size is free, since every line fills the width by construction, so the cost doesn't measure badness of fit. It encodes <em>taste</em>:</p>
+    <ul>
+        <li>A small charge per extra word on a line, so shorter lines win.</li>
+        <li>+6 if a word of 7+ letters shares a line. Long words almost always want to stand alone.</li>
+        <li>+10 for a one- or two-letter word alone on a line, because it can't be tracked out to full width.</li>
+        <li>A quadratic charge for lines under a minimum letter count (a user slider, 3–12), and another for multi-word lines over 14 letters.</li>
+        <li>A charge growing with the tracking a line needs, and +8 for a line that came out too small.</li>
+    </ul>
+    <p>Two rules are hard constraints rather than costs, whenever they can be satisfied: a multi-word phrase never sits on a single line, and no line is shorter than the minimum. Everything else is soft. That split came from a bug. An earlier Shuffle treated the length caps as a huge cost rather than a filter, then narrowed its candidates to those with the fewest too-short lines. A whole phrase on one 43-letter line has <em>zero</em> too-short lines, so it won that round. With the minimum raised to 5, 62% of shuffles rendered the phrase as one enormous line. Now the rules that must never break are filters, and the matters of taste are costs.</p>
+    <p>All of these numbers were tuned by eye against real phrases, and they're the part of the engine I've changed most.</p>
+
+    <h2>Shuffle: sampling good layouts, not random ones</h2>
+    <p>The app has a Shuffle button that re-rolls the arrangement. Truly random breaks are mostly ugly. Always showing the optimum is boring. So Shuffle:</p>
+    <ol>
+        <li>enumerates every partition that satisfies the hard rules (up to 12 lines, capped at 4,000 candidates),</li>
+        <li>adds the DP optimum, and</li>
+        <li>samples with a softmax over cost: <code>weight ∝ exp(−(cost − min) / T)</code>, with <code>T = 2</code>.</li>
+    </ol>
+    <p>Every line's cost is computed once into a table first, because measuring text dominates the runtime and lines repeat across thousands of partitions. The temperature is the variety dial. Raise it and you get stranger layouts; lower it and you see the optimum over and over. Each line then gets a font from a scheme (for example, a condensed Helvetica, a condensed Futura, and Avenir mixed down the block), and those differing widths are why exact ink measurement matters.</p>
+    <p class="note">A known approximation: the breaker estimates sizes with one reference font, and fonts are assigned per line afterwards. Different faces have different widths, so the chosen breaks are optimal for a font that isn't quite the one drawn. In practice it hasn't visibly mattered, but it's the first thing I'd fix with more time.</p>
+
+    <h2>Leading: measure the descenders too</h2>
+    <p>Lines are packed with one equal gap, measured from baseline to the next line's cap top. That fails as soon as a line contains a J, a Q, or a comma. The descender drops below the baseline and nearly touches the line below. Opening the whole block up to clear the deepest descender makes every other gap look loose.</p>
+    <p>Instead, the engine measures each line's ink above and below its baseline (same glyph-path bounds, still linear in size) and sizes the single shared gap from the worst adjacent pair:</p>
+<pre><code>intrusion(i) = inkDescent(i) + max(0, inkAscent(i+1) − capHeight(i+1))
+extender     = inkDescent(i) &gt; 5% of cap height   // a real J or Q tail, not overshoot
+margin(i)    = extender ? baseGap / 4 : baseGap
+gap          = max over i of (intrusion(i) + margin(i))</code></pre>
+    <p>The 5% threshold ignores the optical overshoot that round letters like O and S have below the baseline. The quarter margin lets a real descender tuck in close instead of pushing the whole block apart. If the finished block is taller than the canvas, everything (sizes, kern, and gap) is scaled uniformly, so the block stays flush, just narrower.</p>
+
+    <h2>What it adds up to</h2>
+    <p>The whole engine is about 800 lines of Swift: a tokenizer, the breaker, the fitter, a measurer with a cache, and the vertical layout. Nothing in it is sophisticated on its own. What made the difference was choosing the right measurement: ink instead of advance, both horizontally and vertically. Most of the work was finding the places where "the box" and "what you see" disagree, and siding with what you see.</p>
+
+    <footer>
+        <p>This engine powers <a href="https://apps.apple.com/us/app/id6772761741">Megalith</a>, an iPhone and iPad app I make. Questions or corrections are welcome: <a href="mailto:lukebradfordapps@gmail.com">lukebradfordapps@gmail.com</a>.</p>
+    </footer>
+</main>
+</body>
+</html>
