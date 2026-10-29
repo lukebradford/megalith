@@ -2,7 +2,7 @@ MEGALITH — PRESS KIT
 ====================
 
 Online version: https://lukebradford.github.io/megalith/press/
-App Store:      TODO — add URL once the app ID is assigned
+App Store:      https://apps.apple.com/us/app/id6772761741
 
 
 THE PITCH
@@ -14,9 +14,10 @@ faces mixed across the lines, the way hand-painted signs and protest
 placards have done it for a century. Shuffle the fonts and layout with a
 tap until the arrangement hits, pick a canvas shape, set your colors or
 drop in a photo, and export a high-resolution graphic ready for stories,
-feeds, or print. Megalith 2.0 (coming soon) adds an Animate mode that
-brings the type to life and exports it as video. No design skill, no
-templates, no fiddling with text boxes — your words just hit.
+feeds, or print. Animate brings the type to life — each line stretches
+and snaps into place — and exports it as a looping GIF or video. No
+design skill, no templates, no fiddling with text boxes — your words just
+hit.
 
 
 FAST FACTS
@@ -25,10 +26,10 @@ Title          Megalith
 Developer      Luke Bradford
 Platform       iOS 17+ (iPhone & iPad)
 Category       Graphics & Design
-Price          Free — no ads, no purchases
-Released       2026 (TODO: exact date)
+Price          $4.99, one-time — no subscription, no ads, no IAP
+Released       2026-06-03 (2.2: 2026-10-22)
 Age rating     4+
-App Store      TODO — add URL
+App Store      https://apps.apple.com/us/app/id6772761741
 Press contact  lukebradfordapps@gmail.com
 
 
@@ -36,8 +37,8 @@ WHAT'S IN THIS KIT
 ------------------
 megalith-app-icon-1024.png            High-res app icon (1024 x 1024)
 megalith-wordmark.svg                 MEGALITH wordmark (vector, amber)
-megalith-demo.mp4                     ~29s demo clip from the upcoming 2.0
-                                      build (886 x 1920, H.264)
+megalith-demo.mp4                     ~29s demo clip from the app
+                                      (886 x 1920, H.264)
 screenshots/
   megalith-01-sun.png                 Type a phrase, get a poster
   megalith-02-color-controls.png      Text & background colors
